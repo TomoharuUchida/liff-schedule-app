@@ -7,7 +7,6 @@ import reportWebVitals from './reportWebVitals';
 import { Route, BrowserRouter,Routes } from "react-router-dom";
 import Login from "./Login";
 
-
 ReactDOM.render(
   <React.StrictMode>
     {/* <App /> */}
@@ -18,8 +17,8 @@ ReactDOM.render(
       <Route path="/Login" element={ <Login />}/>
       
       </Routes>
-    </BrowserRouter>
-    </React.StrictMode>,
+      </BrowserRouter>
+  </React.StrictMode>,
   document.getElementById('root')
 );
 
