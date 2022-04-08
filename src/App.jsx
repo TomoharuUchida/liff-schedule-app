@@ -16,7 +16,7 @@ import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 // firebase
 import { db } from "./firebase";
 import { auth } from "./firebase";
-import { collection, query, onSnapshot, addDoc,where } from "firebase/firestore";
+import { collection, query, onSnapshot, addDoc,where,serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged, signOut,getAuth } from "firebase/auth";
 
 // 自作のコンポーネント
@@ -49,22 +49,13 @@ const useStyles = makeStyles((theme) =>
 
 const App = (props) => {
   const { register, handleSubmit } = useForm();
-  const [memorials, setMemorials] = useState([{ userid: "", title: "", date:"",created_at:"", updated_at:"",}]);
+  const [formData, setFormData] = useState(null);
+
+  // const [memorials, setMemorials] = useState([{ userid: "", title: "", date:"",created_at:"", updated_at:"",}]);
   const [input, setInput] = useState("");
 
   const classes = useStyles();
   const navigate = useNavigate()
-  // if (loading) return <p>...loading</p>;
-  // if (error) return <p>{error.message}</p>;
-  // if (liffId) {
-  // useEffect(() => {
-  //   //Firebase ver9 compliant (modular)
-  //   const unSub = onAuthStateChanged(auth, (user) => {
-  //     // !user && props.history.push("login");
-  //     !user && navigate("login");
-  //   });
-  //   return () => unSub();
-  // })
 
   useEffect(() => {
     const auth = getAuth();
@@ -75,30 +66,29 @@ const App = (props) => {
         //Firebase ver9 compliant (modular)
         const q = query(collection(db, "tasks"),where('uid', '==', `${user.uid}`));
         const unsub = onSnapshot(q, (querySnapshot) => {
-          setTasks(
+          setFormData(
             querySnapshot.docs.map((doc) => ({
               id: doc.id,
               title: doc.data().title,
+              title: doc.data().date,
             }))
           );
         });
       }
     })
-  }, );
+  });
   
-    // callender
-    // const [date, setDate] = useState<Date | null>(new Date())
-    // const changeDateHandler = (newDate: Date | null) => {
-    //   setDate(newDate)
-    // }
+  // callender
+    const [date, setDate] = useState(new Date())
+    const changeDateHandler = (newDate) => {
+      setDate(newDate)
+    }
       
   const newTask = async (e) => {
       console.log(e)
       //Firebase ver9 compliant (modular)
-      await addDoc(collection(db, "tasks"), { title: input });
-      setInput("");
-      // const monthData =date.toString().split(" ")[1];
-      // const dayData =date.toString().split(" ")[2];
+    await addDoc(collection(db, "memorialDays"),{ title: formData.title },{ date: formData.date },{created_at:serverTimestamp},{updated_at:serverTimestamp});
+      setFormData("");
   };
     return (
       <div className={styles.app_root}>
@@ -119,6 +109,7 @@ const App = (props) => {
 
         <br />
         <Box m={1} p={1} color="palette.primary">
+          <form onClick={newTask}>
           <FormControl>
             <TextField
               className={classes.field}
@@ -126,21 +117,22 @@ const App = (props) => {
                 shrink: true,
               }}
               label="何の記念日?"
-              value={input}
-              onChange={(e) => setInput(e.target.value)
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })
               }
             />
-            {/* <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <DatePicker value={date} format="P" onChange={changeDateHandler} />
-            </MuiPickersUtilsProvider> */}
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <DatePicker value={formData.date} format="P" onChange={changeDateHandler} />
+            </MuiPickersUtilsProvider>
           </FormControl>
-          <button className={styles.app_icon} disabled={!input} onClick={newTask}>
+          <button className={styles.app_icon} disabled={!formData.title}>
             <AddToPhotosIcon />
           </button>
+          </form>
         </Box>
       
         <List className={classes.list}>
-          {tasks.map((memorials) => (
+          {formData.map((memorials) => (
             <TaskItem key={memorials.id} id={memorials.id} title={memorials.title} />
           ))}
         </List>
