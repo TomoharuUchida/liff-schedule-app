@@ -1,6 +1,7 @@
 {
   "name": "udemy_todo",
   "version": "0.1.0",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@line/liff": "^2.19.0",

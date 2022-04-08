@@ -15,10 +15,11 @@ ReactDOM.render(
       <Routes>
       
       <Route path="/" element={ <App />}/>
-      <Route path="/Login" element={ <Login />}/>
+      <Route path="/login" element={ <Login />}/>
       
       </Routes>
     </BrowserRouter>
+    
     </React.StrictMode>,
   document.getElementById('root')
 );
