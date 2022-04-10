@@ -48,11 +48,18 @@ const useStyles = makeStyles((theme) =>
 
 
 const App = (props) => {
-  const { register, handleSubmit } = useForm();
+  // const { register, handleSubmit } = useForm();
+  // 一覧表示用のデータ
   const [formData, setFormData] = useState(null);
 
   // const [memorials, setMemorials] = useState([{ userid: "", title: "", date:"",created_at:"", updated_at:"",}]);
+  // 入力欄のデータ
   const [input, setInput] = useState("");
+  // callender
+  const [date, setDate] = useState(new Date())
+  const changeDateHandler = (newDate) => {
+    setDate(newDate)
+  }
 
   const classes = useStyles();
   const navigate = useNavigate()
@@ -64,32 +71,29 @@ const App = (props) => {
         navigate("Login");
       } else {
         //Firebase ver9 compliant (modular)
-        const q = query(collection(db, "tasks"),where('uid', '==', `${user.uid}`));
+        const q = query(collection(db, "memorialDays"), where('userid', '==', `${user.uid}`));
         const unsub = onSnapshot(q, (querySnapshot) => {
           setFormData(
             querySnapshot.docs.map((doc) => ({
-              id: doc.id,
+              userid: doc.data().userid,
               title: doc.data().title,
-              title: doc.data().date,
+              date: doc.data().date,
             }))
           );
         });
+        console.log("login done!")
       }
     })
-  });
+  }, );
   
-  // callender
-    const [date, setDate] = useState(new Date())
-    const changeDateHandler = (newDate) => {
-      setDate(newDate)
-    }
       
   const newTask = async (e) => {
-      console.log(e)
-      //Firebase ver9 compliant (modular)
-    await addDoc(collection(db, "memorialDays"),{ title: formData.title },{ date: formData.date },{created_at:serverTimestamp},{updated_at:serverTimestamp});
-      setFormData("");
-  };
+    console.log(e)
+    //Firebase ver9 compliant (modular)
+    // await addDoc(collection(db, "memorialDays"), { userid: user.uid }, { title: input }, { date: date }, { created_at: serverTimestamp }, { updated_at: serverTimestamp });
+    // await addDoc(collection(db, "memorialDays"),{ title: input }, { date: date }, { created_at: serverTimestamp }, { updated_at: serverTimestamp });
+    // setFormData("");
+  }
     return (
       <div className={styles.app_root}>
       
@@ -109,7 +113,6 @@ const App = (props) => {
 
         <br />
         <Box m={1} p={1} color="palette.primary">
-          <form onClick={newTask}>
           <FormControl>
             <TextField
               className={classes.field}
@@ -117,25 +120,25 @@ const App = (props) => {
                 shrink: true,
               }}
               label="何の記念日?"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })
-              }
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
             />
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <DatePicker value={formData.date} format="P" onChange={changeDateHandler} />
+                <DatePicker
+                  value={date}
+                  format="P" onChange={changeDateHandler} />
             </MuiPickersUtilsProvider>
           </FormControl>
-          <button className={styles.app_icon} disabled={!formData.title}>
+          <button className={styles.app_icon} disabled={!input} onClick={newTask}>
             <AddToPhotosIcon />
           </button>
-          </form>
         </Box>
       
-        <List className={classes.list}>
-          {formData.map((memorials) => (
-            <TaskItem key={memorials.id} id={memorials.id} title={memorials.title} />
+        {/* <List className={classes.list}>
+          {formData.map((formdata,k) => (
+            <TaskItem key={k} title={formdata.title} />
           ))}
-        </List>
+        </List> */}
       </div>
     );
     // } else {
